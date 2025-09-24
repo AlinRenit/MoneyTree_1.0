@@ -53,10 +53,10 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
   }
 
   const quickAddCategories = [
-    { label: 'Salary', category: 'income' as const, amount: 5000 },
-    { label: 'Groceries', category: 'expense' as const, amount: 200 },
-    { label: 'Transport', category: 'expense' as const, amount: 50 },
-    { label: 'Savings', category: 'saving' as const, amount: 500 },
+    { label: 'Salary', category: 'income' as const, amount: 50000 },
+    { label: 'Groceries', category: 'expense' as const, amount: 2000 },
+    { label: 'Transport', category: 'expense' as const, amount: 500 },
+    { label: 'Savings', category: 'saving' as const, amount: 5000 },
   ]
 
   const handleQuickAdd = (quickCategory: typeof quickAddCategories[0]) => {
@@ -69,7 +69,7 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
   }
 
   return (
-    <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 h-full flex flex-col">
+    <div className="bg-blue/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 h-full flex flex-col">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800 mb-2">Transactions</h2>
@@ -86,7 +86,7 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Enter amount"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />
         </div>
@@ -96,7 +96,7 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as 'income' | 'expense' | 'saving')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="income">💰 Income</option>
             <option value="expense">🛒 Expense</option>
@@ -111,14 +111,14 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What's this for?"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
         >
           Add Transaction
         </button>
@@ -127,20 +127,45 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
       {/* Quick Add Buttons */}
       <div className="mb-6">
         <h3 className="text-sm font-medium text-gray-700 mb-3">Quick Add</h3>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {quickAddCategories.map((item, index) => (
             <button
               key={index}
               onClick={() => handleQuickAdd(item)}
-              className="p-2 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 flex flex-col items-center space-y-1"
+              className={`p-3 text-sm rounded-xl transition-all duration-200 flex flex-col items-center space-y-2 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                item.category === 'income' 
+                  ? 'bg-green-50 hover:bg-blue-100 border-2 border-blue-200 text-blue-700'
+                  : item.category === 'expense'
+                  ? 'bg-red-50 hover:bg-red-100 border-2 border-red-200 text-red-700'
+                  : 'bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 text-blue-700'
+              }`}
             >
-              <span>{getCategoryIcon(item.category)}</span>
-              <span>{item.label}</span>
-              <span className={getCategoryColor(item.category)}>
-                ${item.amount}
+              <span className="text-2xl">{getCategoryIcon(item.category)}</span>
+              <span className="font-medium">{item.label}</span>
+              <span className="text-xs font-bold">
+                ₹{item.amount}
               </span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="mb-6 grid grid-cols-3 gap-2">
+        <div className="bg-green-50 p-2 rounded-lg text-center">
+          <div className="text-xl">💰</div>
+          <div className="text-xs font-medium text-blue-700">Total Income</div>
+          <div className="text-sm font-bold text-blue-800">₹{transactions.filter(t => t.category === 'income').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}</div>
+        </div>
+        <div className="bg-red-50 p-2 rounded-lg text-center">
+          <div className="text-xl">🛒</div>
+          <div className="text-xs font-medium text-red-700">Expenses</div>
+          <div className="text-sm font-bold text-red-800">₹{Math.abs(transactions.filter(t => t.category === 'expense').reduce((sum, t) => sum + t.amount, 0)).toLocaleString()}</div>
+        </div>
+        <div className="bg-blue-50 p-2 rounded-lg text-center">
+          <div className="text-xl">🌱</div>
+          <div className="text-xs font-medium text-blue-700">Savings</div>
+          <div className="text-sm font-bold text-blue-800">₹{transactions.filter(t => t.category === 'saving').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}</div>
         </div>
       </div>
 
@@ -165,7 +190,7 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
                 </div>
               </div>
               <div className={`font-bold text-sm ${getCategoryColor(transaction.category)}`}>
-                {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
+                {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount).toLocaleString()}
               </div>
             </div>
           ))}
@@ -179,17 +204,46 @@ const TransactionPanel: React.FC<TransactionPanelProps> = ({ transactions, onAdd
         </div>
       </div>
 
-      {/* Mini Charts Placeholder */}
+      {/* Weekly Spending Chart */}
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="text-xs text-gray-600 mb-2">This Week</div>
-        <div className="flex space-x-1 h-8 items-end">
-          {[40, 65, 30, 80, 45, 70, 55].map((height, index) => (
-            <div
-              key={index}
-              className="flex-1 bg-green-300 rounded-t-sm"
-              style={{ height: `${height}%` }}
-            ></div>
-          ))}
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm font-medium text-gray-700">Weekly Activity</div>
+          <div className="text-xs text-gray-500">Last 7 days</div>
+        </div>
+        <div className="space-y-3">
+          {/* Chart */}
+          <div className="flex space-x-1 h-12 items-end bg-gray-50 rounded-lg p-2">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+              const heights = [60, 85, 40, 95, 55, 75, 65];
+              const colors = ['bg-green-400', 'bg-blue-400', 'bg-red-400', 'bg-green-400', 'bg-yellow-400', 'bg-purple-400', 'bg-green-400'];
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div
+                    className={`w-full ${colors[index]} rounded-t-sm transition-all duration-300 hover:opacity-75 cursor-pointer`}
+                    style={{ height: `${heights[index]}%` }}
+                    title={`${day}: ₹${(heights[index] * 10)}`}
+                  ></div>
+                  <div className="text-xs text-gray-500 mt-1">{day.slice(0, 1)}</div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Legend */}
+          <div className="flex items-center justify-center space-x-4 text-xs">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-gray-600">Income</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span className="text-gray-600">Expenses</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-gray-600">Savings</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
