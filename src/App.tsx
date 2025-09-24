@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Navigation from './components/Navigation'
-import TreeVisualization from './components/TreeVisualization'
+import TreeVisualizationNew from './components/TreeVisualizationNew'
 import TransactionPanel from './components/TransactionPanel'
 import FinancialStoryPanel from './components/FinancialStoryPanel'
 import Goals from './components/Goals'
@@ -80,7 +80,7 @@ function App() {
                 </button>
               </div>
               
-              <TreeVisualization 
+              <TreeVisualizationNew 
                 balance={totalBalance}
                 income={totalIncome}
                 expenses={totalExpenses}

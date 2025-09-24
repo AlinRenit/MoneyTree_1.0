@@ -1,291 +1,305 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react';
 
 interface TreeVisualizationProps {
-  balance: number
-  income: number
-  expenses: number
-  savings: number
+  balance: number;
+  income: number;
+  expenses: number;
+  savings: number;
 }
 
-const TreeVisualization: React.FC<TreeVisualizationProps> = ({ 
+const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({ 
   balance, 
   income, 
   expenses, 
   savings 
 }) => {
-  const [season, setSeason] = useState<'spring' | 'summer' | 'autumn' | 'winter'>('spring')
-  const [treeHealth, setTreeHealth] = useState<'excellent' | 'good' | 'fair' | 'poor'>('good')
-  const [animationKey, setAnimationKey] = useState(0)
+  // Calculate tree dimensions based on financial health
+  const totalWealth = Math.max(0, balance + savings);
+  const netIncome = Math.max(0, income - expenses);
+  
+  // Tree base dimensions (well-proportioned)
+  const baseHeight = 400;
+  const baseWidth = 500;
+  
+  // Trunk dimensions - grows with total wealth
+  const trunkHeight = Math.max(80, Math.min(150, totalWealth / 2000 + 80));
+  const trunkWidth = Math.max(25, Math.min(45, totalWealth / 5000 + 25));
+  
+  // Crown dimensions - grows with income
+  const crownRadius = Math.max(60, Math.min(120, income / 1000 + 60));
+  const crownHeight = crownRadius * 1.2;
+  
+  // Branch system - more branches with higher income
+  const branchCount = Math.max(3, Math.min(8, Math.floor(income / 15000) + 3));
+  
+  // Leaflets - density based on income
+  const leafletsPerBranch = Math.max(2, Math.min(8, Math.floor(netIncome / 8000) + 2));
+  const totalLeaflets = branchCount * leafletsPerBranch;
+  
+  // Fruits - appear based on savings milestones
+  const fruitThreshold = 25000; // ₹25,000 per fruit
+  const fruitCount = Math.max(0, Math.min(15, Math.floor(savings / fruitThreshold)));
+  
+  // Tree health color
+  const getHealthColor = () => {
+    if (totalWealth > 200000) return '#22C55E'; // Excellent - bright green
+    if (totalWealth > 100000) return '#65A30D'; // Good - lime green  
+    if (totalWealth > 50000) return '#CA8A04'; // Growing - amber
+    if (totalWealth > 0) return '#DC2626'; // Struggling - red
+    return '#7F1D1D'; // Critical - dark red
+  };
 
-  // Calculate tree growth metrics
-  const getTreeMetrics = () => {
-    const netIncome = income - expenses
-    const savingsRate = income > 0 ? (netIncome / income) * 100 : 0
-    const totalWealth = balance + savings
-    
-    // Branch count based on income levels
-    const branchCount = Math.min(Math.floor(income / 500) + 2, 12)
-    
-    // Tree height based on balance
-    const treeHeight = Math.max(60, Math.min(120, balance / 100 + 60))
-    
-    // Branch depth (how far branches extend)
-    const branchDepth = Math.max(2, Math.min(6, Math.floor(totalWealth / 1000)))
-    
-    return { netIncome, savingsRate, branchCount, treeHeight, branchDepth, totalWealth }
-  }
+  const healthColor = getHealthColor();
+  
+  // Calculate positions
+  const centerX = baseWidth / 2;
+  const groundY = baseHeight - 20;
+  const trunkTop = groundY - trunkHeight;
+  const crownCenterY = trunkTop - crownHeight / 2;
 
-  // Determine tree health based on financial metrics
-  useEffect(() => {
-    const { netIncome, savingsRate } = getTreeMetrics()
+  // Generate branch positions
+  const branches = Array.from({ length: branchCount }, (_, i) => {
+    const angle = (i * 360) / branchCount;
+    const startRadius = crownRadius * 0.3;
+    const endRadius = crownRadius * 0.8;
     
-    if (balance >= 10000 && savingsRate >= 20) {
-      setTreeHealth('excellent')
-      setSeason('summer')
-    } else if (balance >= 5000 && savingsRate >= 10) {
-      setTreeHealth('good') 
-      setSeason('spring')
-    } else if (balance >= 1000 && savingsRate >= 5) {
-      setTreeHealth('fair')
-      setSeason('autumn')
-    } else {
-      setTreeHealth('poor')
-      setSeason('winter')
-    }
+    const startX = centerX + Math.cos(angle * Math.PI / 180) * startRadius;
+    const startY = crownCenterY + Math.sin(angle * Math.PI / 180) * startRadius * 0.6;
+    const endX = centerX + Math.cos(angle * Math.PI / 180) * endRadius;
+    const endY = crownCenterY + Math.sin(angle * Math.PI / 180) * endRadius * 0.6;
     
-    // Trigger animation when financial state changes significantly
-    setAnimationKey(prev => prev + 1)
-  }, [balance, income, expenses])
+    return { startX, startY, endX, endY, angle };
+  });
 
-  // Generate simple, clean branches that actually look like a tree
-  const generateBranches = (branchCount: number, treeHeight: number) => {
-    const branches = []
-    const trunkX = 140
-    const trunkBottom = 260
-    const trunkTop = trunkBottom - treeHeight
-    
-    // Create main branches at different levels
-    const mainBranches = Math.min(6, Math.max(3, branchCount))
-    
-    for (let i = 0; i < mainBranches; i++) {
-      const level = (i + 1) / (mainBranches + 1) // 0.2 to 0.8
-      const branchY = trunkTop + (treeHeight * level * 0.7) // Start from higher up
-      const side = i % 2 === 0 ? 1 : -1 // Alternate sides
-      const branchLength = 30 + (income / 1000) * 5 // Longer branches with more income
-      const upwardAngle = Math.PI / 6 // 30 degrees upward
+  // Generate leaflet positions
+  const leaflets: Array<{x: number, y: number, size: number, opacity: number}> = [];
+  branches.forEach((branch) => {
+    for (let j = 0; j < leafletsPerBranch; j++) {
+      const progress = (j + 1) / (leafletsPerBranch + 1);
+      const x = branch.startX + (branch.endX - branch.startX) * progress;
+      const y = branch.startY + (branch.endY - branch.startY) * progress;
       
-      const endX = trunkX + (branchLength * Math.cos(upwardAngle)) * side
-      const endY = branchY - (branchLength * Math.sin(upwardAngle))
+      // Add some randomness for natural look
+      const offsetX = (Math.random() - 0.5) * 20;
+      const offsetY = (Math.random() - 0.5) * 15;
       
-      branches.push({
-        startX: trunkX,
-        startY: branchY,
-        endX: endX,
-        endY: endY,
-        thickness: Math.max(3, 8 - i),
-        hasLeaves: balance > 500 * (i + 1),
-        level: i
-      })
+      leaflets.push({
+        x: x + offsetX,
+        y: y + offsetY,
+        size: Math.random() * 4 + 3,
+        opacity: 0.7 + Math.random() * 0.3
+      });
     }
-    
-    return branches
-  }
+  });
 
-  const { branchCount, treeHeight } = getTreeMetrics()
-  const branches = generateBranches(branchCount, treeHeight)
+  // Generate fruit positions
+  const fruits = Array.from({ length: fruitCount }, (_, i) => {
+    const angle = (i * 137.5) % 360; // Golden angle for natural distribution
+    const radius = crownRadius * (0.4 + Math.random() * 0.3);
+    const x = centerX + Math.cos(angle * Math.PI / 180) * radius;
+    const y = crownCenterY + Math.sin(angle * Math.PI / 180) * radius * 0.7;
+    
+    return { x, y, size: 8 + Math.random() * 4 };
+  });
 
   return (
-    <div className="bg-gradient-to-b from-sky-200 via-green-100 to-amber-50 p-6 rounded-lg shadow-lg h-96 relative overflow-hidden">
-      <h2 className="text-2xl font-bold text-green-800 mb-4 text-center">Your Money Tree</h2>
-      
-      {/* Realistic Tree Visualization */}
-      <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-        <div className="relative" key={animationKey}>
-          
-          {/* Ground with grass */}
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-56 h-6 bg-gradient-to-t from-green-800 via-green-600 to-green-400 rounded-full opacity-80"></div>
-          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-48 h-3 bg-green-700 rounded-full opacity-60"></div>
-          
-          {/* Beautiful Tree SVG */}
-          <svg 
-            width="300" 
-            height="320" 
-            viewBox="0 0 300 320" 
-            className="drop-shadow-xl"
-          >
-            {/* Tree Trunk with natural shape */}
-            <path 
-              d={`M 145 300 
-                  Q 142 280 140 260
-                  Q 138 240 136 220
-                  Q 135 200 134 180
-                  Q 133 160 132 ${300 - treeHeight}
-                  Q 134 ${300 - treeHeight} 136 ${300 - treeHeight}
-                  Q 138 160 139 180
-                  Q 141 200 143 220  
-                  Q 145 240 147 260
-                  Q 149 280 152 300 Z`}
-              fill="#8B4513"
-            />
-            
-            {/* Trunk texture */}
-            <path 
-              d={`M 143 300 
-                  Q 141 280 140 260
-                  Q 139 240 138 220
-                  Q 137 200 136 180
-                  Q 135 160 134 ${300 - treeHeight + 20}
-                  Q 136 ${300 - treeHeight + 20} 138 ${300 - treeHeight + 20}
-                  Q 139 160 140 180
-                  Q 141 200 142 220  
-                  Q 143 240 144 260
-                  Q 145 280 147 300 Z`}
-              fill="#A0522D"
-            />
-
-            {/* Main Crown - Large leafy area */}
-            {season !== 'winter' && (
-              <>
-                {/* Multiple overlapping foliage clusters for natural look */}
-                <ellipse cx="140" cy={120 - Math.max(0, (treeHeight - 80) / 3)} rx={50 + (balance / 800)} ry={40 + (balance / 1000)} 
-                  fill={season === 'autumn' ? '#DAA520' : season === 'spring' ? '#90EE90' : '#228B22'} opacity="0.9"/>
-                
-                <ellipse cx="110" cy={130 - Math.max(0, (treeHeight - 80) / 3)} rx={35 + (balance / 1200)} ry={30 + (balance / 1500)} 
-                  fill={season === 'autumn' ? '#CD853F' : season === 'spring' ? '#98FB98' : '#32CD32'} opacity="0.8"/>
-                
-                <ellipse cx="170" cy={125 - Math.max(0, (treeHeight - 80) / 3)} rx={40 + (balance / 1000)} ry={35 + (balance / 1200)} 
-                  fill={season === 'autumn' ? '#B8860B' : season === 'spring' ? '#9AFF9A' : '#228B22'} opacity="0.8"/>
-                
-                <ellipse cx="140" cy={100 - Math.max(0, (treeHeight - 80) / 4)} rx={30 + (balance / 1500)} ry={25 + (balance / 1800)} 
-                  fill={season === 'autumn' ? '#DAA520' : season === 'spring' ? '#90EE90' : '#006400'} opacity="0.9"/>
-              </>
-            )}
-
-            {/* Natural Branches */}
-            {branches.map((branch, index) => (
-              <g key={index}>
-                {/* Main branch */}
-                <path 
-                  d={`M ${branch.startX} ${branch.startY} 
-                      Q ${branch.startX + (branch.endX - branch.startX) * 0.3} ${branch.startY - 10} 
-                      ${branch.endX} ${branch.endY}`}
-                  stroke="#8B4513" 
-                  strokeWidth={branch.thickness} 
-                  fill="none"
-                  strokeLinecap="round"
-                />
-                
-                {/* Secondary branches */}
-                {branch.hasLeaves && income > 2000 && (
-                  <>
-                    <path 
-                      d={`M ${branch.endX} ${branch.endY} 
-                          Q ${branch.endX + 15} ${branch.endY - 8} 
-                          ${branch.endX + 25} ${branch.endY - 15}`}
-                      stroke="#654321" 
-                      strokeWidth="2" 
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                    <path 
-                      d={`M ${branch.endX} ${branch.endY} 
-                          Q ${branch.endX - 12} ${branch.endY - 10} 
-                          ${branch.endX - 20} ${branch.endY - 18}`}
-                      stroke="#654321" 
-                      strokeWidth="2" 
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                  </>
-                )}
-                
-                {/* Fruits scattered naturally */}
-                {savings > 1000 && season === 'summer' && branch.level < 4 && (
-                  <>
-                    <circle cx={branch.endX + 8} cy={branch.endY - 12} r="4" fill="#FF6347" className="animate-bounce" style={{ animationDelay: `${index * 0.2}s` }}/>
-                    <circle cx={branch.endX - 6} cy={branch.endY - 8} r="4" fill="#FFA500" className="animate-bounce" style={{ animationDelay: `${index * 0.2 + 0.1}s` }}/>
-                    {savings > 3000 && <circle cx={branch.endX + 2} cy={branch.endY - 18} r="4" fill="#FF4500" className="animate-bounce" style={{ animationDelay: `${index * 0.2 + 0.2}s` }}/>}
-                  </>
-                )}
-                
-                {/* Flowers for spring */}
-                {income > 1500 && season === 'spring' && branch.level < 3 && (
-                  <>
-                    <circle cx={branch.endX + 5} cy={branch.endY - 5} r="3" fill="#FFB6C1"/>
-                    <circle cx={branch.endX + 5} cy={branch.endY - 5} r="1.5" fill="#FF69B4"/>
-                    <circle cx={branch.endX - 8} cy={branch.endY - 10} r="3" fill="#FFC0CB"/>
-                    <circle cx={branch.endX - 8} cy={branch.endY - 10} r="1.5" fill="#FF1493"/>
-                  </>
-                )}
-              </g>
-            ))}
-
-            {/* Money effects floating around tree */}
-            {treeHealth === 'excellent' && (
-              <g>
-                <text x="80" y="100" className="animate-bounce" fontSize="16" style={{ animationDelay: '0s' }}>💰</text>
-                <text x="210" y="90" className="animate-bounce" fontSize="16" style={{ animationDelay: '0.5s' }}>💸</text>
-                <text x="140" y="70" className="animate-bounce" fontSize="16" style={{ animationDelay: '1s' }}>💵</text>
-                <text x="60" y="140" className="animate-bounce" fontSize="14" style={{ animationDelay: '1.5s' }}>🪙</text>
-                <text x="220" y="130" className="animate-bounce" fontSize="14" style={{ animationDelay: '2s' }}>�</text>
-              </g>
-            )}
-
-            {/* Storm effects for poor health */}
-            {treeHealth === 'poor' && (
-              <>
-                <ellipse cx="90" cy="60" rx="25" ry="15" fill="#696969" opacity="0.8"/>
-                <ellipse cx="190" cy="50" rx="30" ry="18" fill="#555" opacity="0.8"/>
-                <text x="140" y="40" textAnchor="middle" fontSize="20" className="animate-pulse">⚡</text>
-                <text x="100" y="30" fontSize="16" className="animate-pulse">⛈️</text>
-              </>
-            )}
-          </svg>
-          
-          {/* Falling leaves animation for autumn */}
-          {season === 'autumn' && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="text-orange-400 text-xs absolute top-4 left-8 animate-bounce" style={{ animationDelay: '0s' }}>🍂</div>
-              <div className="text-red-400 text-xs absolute top-12 right-12 animate-bounce" style={{ animationDelay: '1s' }}>🍂</div>
-              <div className="text-yellow-400 text-xs absolute top-20 left-16 animate-bounce" style={{ animationDelay: '2s' }}>🍂</div>
-            </div>
-          )}
-          
-          {/* Money rain for excellent performance */}
-          {treeHealth === 'excellent' && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="text-yellow-400 text-sm absolute top-2 left-4 animate-bounce">💰</div>
-              <div className="text-green-400 text-sm absolute top-6 right-6 animate-bounce" style={{ animationDelay: '0.5s' }}>💵</div>
-              <div className="text-yellow-400 text-sm absolute top-10 left-12 animate-bounce" style={{ animationDelay: '1s' }}>💰</div>
-            </div>
-          )}
-          
-          {/* Seasonal decorations */}
-          {season === 'winter' && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="animate-pulse text-white text-xs absolute top-4 left-4">❄️</div>
-              <div className="animate-pulse text-white text-xs absolute top-8 right-8" style={{ animationDelay: '0.5s' }}>❄️</div>
-              <div className="animate-pulse text-white text-xs absolute bottom-12 left-8" style={{ animationDelay: '1s' }}>❄️</div>
-            </div>
-          )}
+    <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-b from-sky-100 to-green-50 rounded-2xl p-6">
+      {/* Financial Stats */}
+      <div className="mb-4 text-center">
+        <h2 className="text-2xl font-bold" style={{ color: healthColor }}>
+          Your Money Tree
+        </h2>
+        <div className="text-sm text-gray-600 mt-1">
+          Wealth: ₹{totalWealth.toLocaleString()} | Income: ₹{income.toLocaleString()} | Savings: ₹{savings.toLocaleString()}
         </div>
       </div>
-      
-      {/* Financial Status Summary */}
-      <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-        <div className="text-center">
-          <div className="text-gray-600">Balance</div>
-          <div className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ${balance.toLocaleString()}
-          </div>
+
+      {/* Tree SVG */}
+      <svg 
+        width={baseWidth} 
+        height={baseHeight} 
+        className="transition-all duration-1000 drop-shadow-lg"
+        viewBox={`0 0 ${baseWidth} ${baseHeight}`}
+      >
+        {/* Sky gradient background */}
+        <defs>
+          <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#87CEEB" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#98FB98" stopOpacity="0.1" />
+          </linearGradient>
+          <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="2" dy="3" stdDeviation="2" floodOpacity="0.3" />
+          </filter>
+        </defs>
+        
+        <rect width={baseWidth} height={baseHeight} fill="url(#skyGradient)" />
+
+        {/* Ground */}
+        <ellipse
+          cx={centerX}
+          cy={groundY + 10}
+          rx={150}
+          ry={20}
+          fill="#8B7355"
+          opacity={0.6}
+        />
+        <ellipse
+          cx={centerX}
+          cy={groundY + 5}
+          rx={140}
+          ry={15}
+          fill="#A0522D"
+          opacity={0.8}
+        />
+
+        {/* Tree Trunk */}
+        <rect
+          x={centerX - trunkWidth / 2}
+          y={trunkTop}
+          width={trunkWidth}
+          height={trunkHeight}
+          fill="#8B4513"
+          rx={trunkWidth / 4}
+          filter="url(#dropShadow)"
+        />
+        
+        {/* Trunk texture lines */}
+        {Array.from({ length: 3 }, (_, i) => (
+          <line
+            key={i}
+            x1={centerX - trunkWidth / 3}
+            y1={trunkTop + (i + 1) * trunkHeight / 4}
+            x2={centerX + trunkWidth / 3}
+            y2={trunkTop + (i + 1) * trunkHeight / 4}
+            stroke="#654321"
+            strokeWidth={1}
+            opacity={0.5}
+          />
+        ))}
+
+        {/* Main tree crown */}
+        <circle
+          cx={centerX}
+          cy={crownCenterY}
+          r={crownRadius}
+          fill={healthColor}
+          opacity={0.8}
+          filter="url(#dropShadow)"
+        />
+        
+        {/* Secondary crown layers for depth */}
+        <circle
+          cx={centerX - 15}
+          cy={crownCenterY + 10}
+          r={crownRadius * 0.7}
+          fill={healthColor}
+          opacity={0.6}
+        />
+        <circle
+          cx={centerX + 20}
+          cy={crownCenterY - 5}
+          r={crownRadius * 0.6}
+          fill={healthColor}
+          opacity={0.7}
+        />
+
+        {/* Branches */}
+        {branches.map((branch, i) => (
+          <line
+            key={`branch-${i}`}
+            x1={branch.startX}
+            y1={branch.startY}
+            x2={branch.endX}
+            y2={branch.endY}
+            stroke="#8B4513"
+            strokeWidth={Math.max(2, 6 - i * 0.5)}
+            opacity={0.8}
+          />
+        ))}
+
+        {/* Leaflets */}
+        {leaflets.map((leaflet, i) => (
+          <circle
+            key={`leaflet-${i}`}
+            cx={leaflet.x}
+            cy={leaflet.y}
+            r={leaflet.size}
+            fill="#228B22"
+            opacity={leaflet.opacity}
+            className="animate-pulse"
+            style={{ animationDelay: `${i * 0.1}s`, animationDuration: '3s' }}
+          />
+        ))}
+
+        {/* Fruits (savings rewards) */}
+        {fruits.map((fruit, i) => (
+          <g key={`fruit-${i}`}>
+            <circle
+              cx={fruit.x}
+              cy={fruit.y}
+              r={fruit.size}
+              fill="#FF6347"
+              opacity={0.9}
+              className="animate-bounce"
+              style={{ animationDelay: `${i * 0.2}s`, animationDuration: '2s' }}
+            />
+            <circle
+              cx={fruit.x - 2}
+              cy={fruit.y - 2}
+              r={fruit.size * 0.3}
+              fill="#FF8C69"
+              opacity={0.8}
+            />
+          </g>
+        ))}
+
+        {/* Tree health indicator text */}
+        <text
+          x={centerX}
+          y={baseHeight - 5}
+          textAnchor="middle"
+          className="text-sm font-bold"
+          fill={healthColor}
+        >
+          {totalWealth > 200000 ? "🌳 Thriving Wealth Tree!" : 
+           totalWealth > 100000 ? "🌱 Growing Strong!" : 
+           totalWealth > 50000 ? "🌿 Healthy Growth" : 
+           totalWealth > 0 ? "🌱 Small Sapling" : "💀 Needs Nourishment"}
+        </text>
+      </svg>
+
+      {/* Tree Growth Stats */}
+      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+        <div className="bg-green-100 rounded-lg p-2">
+          <div className="font-bold text-green-800">{Math.round(crownRadius)}px</div>
+          <div className="text-green-600">Crown Size</div>
         </div>
-        <div className="text-center">
-          <div className="text-gray-600">Season</div>
-          <div className="font-bold text-green-600 capitalize">{season}</div>
+        <div className="bg-blue-100 rounded-lg p-2">
+          <div className="font-bold text-blue-800">{totalLeaflets}</div>
+          <div className="text-blue-600">Leaflets</div>
         </div>
+        <div className="bg-red-100 rounded-lg p-2">
+          <div className="font-bold text-red-800">{fruitCount}</div>
+          <div className="text-red-600">Fruits</div>
+        </div>
+        <div className="bg-amber-100 rounded-lg p-2">
+          <div className="font-bold text-amber-800">{branchCount}</div>
+          <div className="text-amber-600">Branches</div>
+        </div>
+      </div>
+
+      {/* Growth tips */}
+      <div className="mt-3 text-xs text-center text-gray-500 max-w-md">
+        {fruitCount === 0 ? 
+          "💡 Save ₹25,000 to grow your first fruit! Fruits represent your savings milestones." :
+        totalLeaflets < 20 ? 
+          "💡 Increase your income to grow more leaflets on your tree branches!" :
+          "🎉 Your money tree is flourishing! Keep growing your wealth!"
+        }
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TreeVisualization
+export default TreeVisualizationNew;
+
