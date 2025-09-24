@@ -176,18 +176,46 @@ const FinancialStoryPanel: React.FC<FinancialStoryPanelProps> = ({
 
       {/* Financial Summary Cards */}
       <div className="grid grid-cols-1 gap-3 mb-6">
-        <div className="bg-gradient-to-r from-green-100 to-emerald-100 p-3 rounded-lg">
-          <div className="text-sm text-green-700 font-medium">Tree Health Score</div>
-          <div className="text-2xl font-bold text-green-800">
-            {balance > 5000 ? '🌟' : balance > 1000 ? '⭐' : '🌱'} 
+        <div className="bg-gradient-to-r from-green-100 to-emerald-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-green-700 font-medium">Tree Health Score</div>
+            <div className="text-2xl">
+              {balance > 5000 ? '🌟' : balance > 1000 ? '⭐' : '🌱'}
+            </div>
+          </div>
+          <div className="text-xl font-bold text-green-800 mb-1">
             {balance > 5000 ? 'Excellent' : balance > 1000 ? 'Good' : 'Growing'}
+          </div>
+          <div className="text-xs text-green-600">
+            {balance > 5000 ? 'Your tree is flourishing!' : balance > 1000 ? 'Steady growth ahead' : 'Keep nurturing your tree'}
           </div>
         </div>
         
-        <div className="bg-gradient-to-r from-blue-100 to-cyan-100 p-3 rounded-lg">
-          <div className="text-sm text-blue-700 font-medium">Savings Rate</div>
-          <div className="text-2xl font-bold text-blue-800">
+        <div className="bg-gradient-to-r from-blue-100 to-cyan-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-blue-700 font-medium">Savings Rate</div>
+            <div className="text-2xl">💰</div>
+          </div>
+          <div className="text-xl font-bold text-blue-800 mb-1">
             {income > 0 ? `${((savings / income) * 100).toFixed(1)}%` : '0%'}
+          </div>
+          <div className="text-xs text-blue-600">
+            {income > 0 && ((savings / income) * 100) > 20 ? 'Excellent saving habit!' : 
+             income > 0 && ((savings / income) * 100) > 10 ? 'Good progress' : 
+             'Try to save more'}
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm text-purple-700 font-medium">Monthly Trend</div>
+            <div className="text-2xl">📈</div>
+          </div>
+          <div className="text-xl font-bold text-purple-800 mb-1">
+            {balance >= 0 ? '+' : ''}{balance > 0 ? 'Growing' : 'Declining'}
+          </div>
+          <div className="text-xs text-purple-600">
+            {balance > 0 ? 'Keep up the momentum!' : 'Focus on income vs expenses'}
           </div>
         </div>
       </div>
