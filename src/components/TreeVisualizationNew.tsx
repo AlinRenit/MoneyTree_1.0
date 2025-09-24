@@ -57,16 +57,19 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
   const trunkTop = groundY - trunkHeight;
   const crownCenterY = trunkTop - crownHeight / 2;
 
-  // Generate branch positions
+  // Generate branch positions - starting from trunk and extending outward
   const branches = Array.from({ length: branchCount }, (_, i) => {
     const angle = (i * 360) / branchCount;
-    const startRadius = crownRadius * 0.3;
-    const endRadius = crownRadius * 0.8;
+    const branchStartHeight = trunkTop + (trunkHeight * 0.2); // Start from upper part of trunk
+    const branchLength = Math.max(40, Math.min(90, income / 1500 + 40));
     
-    const startX = centerX + Math.cos(angle * Math.PI / 180) * startRadius;
-    const startY = crownCenterY + Math.sin(angle * Math.PI / 180) * startRadius * 0.6;
-    const endX = centerX + Math.cos(angle * Math.PI / 180) * endRadius;
-    const endY = crownCenterY + Math.sin(angle * Math.PI / 180) * endRadius * 0.6;
+    // Start from trunk edge
+    const startX = centerX + Math.cos(angle * Math.PI / 180) * (trunkWidth / 2);
+    const startY = branchStartHeight + (i * trunkHeight * 0.1); // Stagger branch heights
+    
+    // End extends outward into crown area
+    const endX = centerX + Math.cos(angle * Math.PI / 180) * branchLength;
+    const endY = startY - branchLength * 0.3; // Slight upward angle
     
     return { startX, startY, endX, endY, angle };
   });
@@ -240,8 +243,6 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
               r={fruit.size}
               fill="#FF6347"
               opacity={0.9}
-              className="animate-bounce"
-              style={{ animationDelay: `${i * 0.2}s`, animationDuration: '2s' }}
             />
             <circle
               cx={fruit.x - 2}
