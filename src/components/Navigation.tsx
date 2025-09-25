@@ -38,7 +38,6 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection
             {/* Achievement Badges */}
             <div className="flex space-x-2">
               <div className="group relative">
-                <span className="text-xl cursor-pointer hover:scale-110 transition-transform duration-200">🏆</span>
                 <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                   Savings Champion
                 </div>
@@ -56,15 +55,6 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection, setActiveSection
                 </div>
               </div>
             </div>
-            
-            {/* Notifications */}
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <span className="text-xl">🔔</span>
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
-              </span>
-            </button>
-            
             {/* Profile Avatar */}
             <div className="group relative">
               <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:shadow-lg transition-shadow">
