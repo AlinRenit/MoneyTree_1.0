@@ -3,11 +3,13 @@ import Navigation from './components/Navigation'
 import TreeVisualizationNew from './components/TreeVisualizationNew'
 import TransactionPanel from './components/TransactionPanel'
 import FinancialStoryPanel from './components/FinancialStoryPanel'
+import AIAnalysisPanel from './components/AIAnalysisPanel'
+import StatisticsPanel from './components/StatisticsPanel'
 import Goals from './components/Goals'
 import Predictions from './components/Predictions'
 import './App.css'
 
-interface Transaction {
+export interface Transaction {
   id: string
   amount: number
   category: 'income' | 'expense' | 'saving'
@@ -55,7 +57,7 @@ function App() {
                 transactions={transactions}
               />
             </div>
-            
+
             {/* Tree Visualization - Center */}
             <div className="lg:col-span-2 order-1 lg:order-2 overflow-y-auto max-h-[calc(100vh-140px)]">
               {/* Tree Growth Test Buttons */}
@@ -79,15 +81,24 @@ function App() {
                   🌳 +₹50,000 Wealth
                 </button>
               </div>
-              
+
               <TreeVisualizationNew 
                 balance={totalBalance}
                 income={totalIncome}
                 expenses={totalExpenses}
                 savings={totalSavings}
               />
+
+              {/* AI Analysis, Chat, and Statistics Panels */}
+              <div className="mt-8">
+                {/* AI Analysis Panel */}
+                <div className="mb-8">
+                  <AIAnalysisPanel transactions={transactions} />
+                  <StatisticsPanel transactions={transactions} />
+                </div>
+              </div>
             </div>
-            
+
             {/* Transaction Panel - Right */}
             <div className="lg:col-span-1 order-2 lg:order-3">
               <TransactionPanel 
