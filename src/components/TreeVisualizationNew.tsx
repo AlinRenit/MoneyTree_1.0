@@ -17,16 +17,16 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
   const totalWealth = Math.max(0, balance + savings);
   const netIncome = Math.max(0, income - expenses);
   
-  // Tree base dimensions (well-proportioned)
-  const baseHeight = 400;
-  const baseWidth = 500;
+  // Tree base dimensions (adjusted to show full tree)
+  const baseHeight = 280;
+  const baseWidth = 350;
   
   // Trunk dimensions - grows with total wealth
-  const trunkHeight = Math.max(80, Math.min(150, totalWealth / 2000 + 80));
+  const trunkHeight = Math.max(60, Math.min(100, totalWealth / 2000 + 60));
   const trunkWidth = Math.max(25, Math.min(45, totalWealth / 5000 + 25));
   
-  // Crown dimensions - grows with income
-  const crownRadius = Math.max(60, Math.min(120, income / 1000 + 60));
+  // Crown dimensions - grows with income (reduced to fit better)
+  const crownRadius = Math.max(45, Math.min(80, income / 1500 + 45));
   const crownHeight = crownRadius * 1.2;
   
   // Branch system - more branches with higher income
@@ -51,25 +51,25 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
 
   const healthColor = getHealthColor();
   
-  // Calculate positions
+  // Calculate positions with proper spacing from top
   const centerX = baseWidth / 2;
-  const groundY = baseHeight - 20;
+  const groundY = baseHeight - 30;
   const trunkTop = groundY - trunkHeight;
-  const crownCenterY = trunkTop - crownHeight / 2;
+  const crownCenterY = Math.max(crownRadius + 20, trunkTop - crownRadius);
 
   // Generate branch positions - starting from trunk and extending outward
   const branches = Array.from({ length: branchCount }, (_, i) => {
     const angle = (i * 360) / branchCount;
-    const branchStartHeight = trunkTop + (trunkHeight * 0.2); // Start from upper part of trunk
-    const branchLength = Math.max(40, Math.min(90, income / 1500 + 40));
+    const branchStartHeight = trunkTop + (trunkHeight * 0.3); // Start from upper part of trunk
+    const branchLength = Math.max(35, Math.min(65, income / 2000 + 35)); // Reduced length to fit
     
     // Start from trunk edge
     const startX = centerX + Math.cos(angle * Math.PI / 180) * (trunkWidth / 2);
-    const startY = branchStartHeight + (i * trunkHeight * 0.1); // Stagger branch heights
+    const startY = branchStartHeight + (i * trunkHeight * 0.08); // Stagger branch heights
     
-    // End extends outward into crown area
+    // End extends outward but stays within bounds
     const endX = centerX + Math.cos(angle * Math.PI / 180) * branchLength;
-    const endY = startY - branchLength * 0.3; // Slight upward angle
+    const endY = Math.max(crownRadius + 25, startY - branchLength * 0.25); // Keep above minimum height
     
     return { startX, startY, endX, endY, angle };
   });
@@ -106,13 +106,37 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
   });
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-b from-sky-100 to-green-50 rounded-2xl p-6">
-      {/* Financial Stats */}
-      <div className="mb-4 text-center">
-        <h2 className="text-2xl font-bold" style={{ color: healthColor }}>
+    <div 
+      className="bg-gradient-to-b from-sky-100 to-green-50 rounded-xl" 
+      style={{ 
+        margin: 0, 
+        padding: '2px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}
+    >
+      {/* Compact Financial Stats */}
+      <div style={{ margin: 0, padding: '2px', textAlign: 'center' }}>
+        <h2 style={{ 
+          color: healthColor, 
+          margin: 0, 
+          padding: 0, 
+          fontSize: '16px',
+          fontWeight: 'bold',
+          lineHeight: '1.2' 
+        }}>
           Your Money Tree
         </h2>
-        <div className="text-sm text-gray-600 mt-1">
+        <div style={{ 
+          margin: 0, 
+          padding: 0, 
+          fontSize: '11px',
+          color: '#6b7280',
+          lineHeight: '1.1' 
+        }}>
           Wealth: ₹{totalWealth.toLocaleString()} | Income: ₹{income.toLocaleString()} | Savings: ₹{savings.toLocaleString()}
         </div>
       </div>
@@ -123,6 +147,7 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
         height={baseHeight} 
         className="transition-all duration-1000 drop-shadow-lg"
         viewBox={`0 0 ${baseWidth} ${baseHeight}`}
+        style={{ margin: 0, padding: 0, display: 'block' }}
       >
         {/* Sky gradient background */}
         <defs>
@@ -140,17 +165,17 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
         {/* Ground */}
         <ellipse
           cx={centerX}
-          cy={groundY + 10}
-          rx={150}
-          ry={20}
+          cy={groundY + 8}
+          rx={120}
+          ry={15}
           fill="#8B7355"
           opacity={0.6}
         />
         <ellipse
           cx={centerX}
           cy={groundY + 5}
-          rx={140}
-          ry={15}
+          rx={110}
+          ry={12}
           fill="#A0522D"
           opacity={0.8}
         />
@@ -257,45 +282,45 @@ const TreeVisualizationNew: React.FC<TreeVisualizationProps> = ({
         {/* Tree health indicator text */}
         <text
           x={centerX}
-          y={baseHeight - 5}
+          y={baseHeight - 8}
           textAnchor="middle"
-          className="text-sm font-bold"
+          className="text-xs font-bold"
           fill={healthColor}
         >
-          {totalWealth > 200000 ? "🌳 Thriving Wealth Tree!" : 
-           totalWealth > 100000 ? "🌱 Growing Strong!" : 
-           totalWealth > 50000 ? "🌿 Healthy Growth" : 
-           totalWealth > 0 ? "🌱 Small Sapling" : "💀 Needs Nourishment"}
+          {totalWealth > 200000 ? "🌳 Thriving!" : 
+           totalWealth > 100000 ? "🌱 Growing!" : 
+           totalWealth > 50000 ? "🌿 Healthy" : 
+           totalWealth > 0 ? "🌱 Small" : "💀 Needs Care"}
         </text>
       </svg>
 
-      {/* Tree Growth Stats */}
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
-        <div className="bg-green-100 rounded-lg p-2">
-          <div className="font-bold text-green-800">{Math.round(crownRadius)}px</div>
-          <div className="text-green-600">Crown Size</div>
+      {/* Compact Tree Growth Stats */}
+      <div className="grid grid-cols-4 gap-0 text-center text-xs" style={{ margin: 0, padding: 0 }}>
+        <div className="bg-green-100 rounded-sm px-1 py-0.5">
+          <div className="font-bold text-green-800 text-xs">{Math.round(crownRadius)}</div>
+          <div className="text-green-600 text-xs">Crown</div>
         </div>
-        <div className="bg-blue-100 rounded-lg p-2">
-          <div className="font-bold text-blue-800">{totalLeaflets}</div>
-          <div className="text-blue-600">Leaflets</div>
+        <div className="bg-blue-100 rounded-sm px-1 py-0.5">
+          <div className="font-bold text-blue-800 text-xs">{totalLeaflets}</div>
+          <div className="text-blue-600 text-xs">Leaves</div>
         </div>
-        <div className="bg-red-100 rounded-lg p-2">
-          <div className="font-bold text-red-800">{fruitCount}</div>
-          <div className="text-red-600">Fruits</div>
+        <div className="bg-red-100 rounded-sm px-1 py-0.5">
+          <div className="font-bold text-red-800 text-xs">{fruitCount}</div>
+          <div className="text-red-600 text-xs">Fruits</div>
         </div>
-        <div className="bg-amber-100 rounded-lg p-2">
-          <div className="font-bold text-amber-800">{branchCount}</div>
-          <div className="text-amber-600">Branches</div>
+        <div className="bg-amber-100 rounded-sm px-1 py-0.5">
+          <div className="font-bold text-amber-800 text-xs">{branchCount}</div>
+          <div className="text-amber-600 text-xs">Branch</div>
         </div>
       </div>
 
-      {/* Growth tips */}
-      <div className="mt-3 text-xs text-center text-gray-500 max-w-md">
+      {/* Compact Growth tip */}
+      <div className="text-xs text-center text-gray-500" style={{ margin: 0, padding: '2px' }}>
         {fruitCount === 0 ? 
-          "💡 Save ₹25,000 to grow your first fruit! Fruits represent your savings milestones." :
+          "💡 Save ₹25K for first fruit!" :
         totalLeaflets < 20 ? 
-          "💡 Increase your income to grow more leaflets on your tree branches!" :
-          "🎉 Your money tree is flourishing! Keep growing your wealth!"
+          "💡 Boost income for more leaves!" :
+          "🎉 Tree is flourishing!"
         }
       </div>
     </div>

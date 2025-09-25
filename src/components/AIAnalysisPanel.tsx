@@ -58,8 +58,32 @@ const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({ transactions }) => {
     if (!chatInput) return;
     setLoading(true);
     const newHistory = [...chatHistory, { role: 'user', content: chatInput }];
+    
+    // Create financial summary from transactions
+    const totalBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const totalIncome = transactions.filter(t => t.category === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = Math.abs(transactions.filter(t => t.category === 'expense').reduce((sum, t) => sum + t.amount, 0));
+    const totalSavings = transactions.filter(t => t.category === 'saving').reduce((sum, t) => sum + t.amount, 0);
+    
+    const financialContext = `
+FINANCIAL CONTEXT - You are helping a user with their personal finances based on their actual transaction data:
+
+CURRENT FINANCIAL STATUS:
+- Total Balance: ₹${totalBalance.toLocaleString()}
+- Total Income: ₹${totalIncome.toLocaleString()}
+- Total Expenses: ₹${totalExpenses.toLocaleString()}
+- Total Savings: ₹${totalSavings.toLocaleString()}
+
+RECENT TRANSACTIONS:
+${transactions.slice(0, 10).map(t => 
+  `${t.date.toLocaleDateString()}: ${t.category.toUpperCase()} - ₹${t.amount.toLocaleString()} (${t.description})`
+).join('\n')}
+
+Based on this financial data, please answer the user's question: ${chatInput}
+`;
+
     try {
-      const data = await geminiProRequest(chatInput, apiKey, true, chatHistory);
+      const data = await geminiProRequest(financialContext, apiKey, true, chatHistory);
       const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
       setChatResponse(responseText);
       setChatHistory([...newHistory, { role: 'model', content: responseText }]);
@@ -71,51 +95,95 @@ const AIAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({ transactions }) => {
   };
 
   return (
-    <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>AI Financial Analysis</h2>
-      <button onClick={handleAnalyze} disabled={loading} style={{ marginBottom: '1rem' }}>
-        {loading ? 'Analyzing...' : 'Analyze My Transactions'}
-      </button>
-      {analysis && <div style={{ whiteSpace: 'pre-wrap', marginBottom: '1rem' }}>{analysis}</div>}
-      <form onSubmit={handleAsk} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+    <div className="space-y-4">
+      {!apiKey && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+          <strong>Warning:</strong> Gemini API key not found. Please add your API key to the .env file.
+        </div>
+      )}
+      
+      <div>
+        <button 
+          onClick={handleAnalyze} 
+          disabled={loading || !apiKey}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Analyzing...' : 'Analyze My Transactions'}
+        </button>
+      </div>
+      
+      {analysis && (
+        <div className="bg-gray-50 p-4 rounded-lg border">
+          <h4 className="font-semibold mb-2">Analysis Results:</h4>
+          <div className="whitespace-pre-wrap text-sm">{analysis}</div>
+        </div>
+      )}
+
+      <form onSubmit={handleAsk} className="flex gap-2">
         <input
           type="text"
           value={question}
           onChange={handleQuestionChange}
           placeholder="Ask a question about your finances..."
-          style={{ flex: 1, padding: '0.5rem' }}
-          disabled={loading}
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          disabled={loading || !apiKey}
         />
-        <button type="submit" disabled={loading || !question}>
-          {loading ? 'Answering...' : 'Ask AI'}
+        <button 
+          type="submit" 
+          disabled={loading || !question || !apiKey}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Asking...' : 'Ask AI'}
         </button>
       </form>
-      {answer && <div style={{ marginBottom: '2rem', whiteSpace: 'pre-wrap' }}>{answer}</div>}
 
-      <h3>Gemini Pro Chat</h3>
-      <form onSubmit={handleSendChat} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <input
-          type="text"
-          value={chatInput}
-          onChange={handleChatInputChange}
-          placeholder="Type your message..."
-          style={{ flex: 1, padding: '0.5rem' }}
-          disabled={loading}
-        />
-        <button type="submit" disabled={loading || !chatInput}>
-          {loading ? 'Sending...' : 'Send'}
-        </button>
-      </form>
-      <div style={{ marginBottom: '1rem', whiteSpace: 'pre-wrap' }}>{chatResponse}</div>
-      {chatHistory.length > 0 && (
-        <div style={{ maxHeight: '200px', overflowY: 'auto', background: '#f9f9f9', padding: '0.5rem', borderRadius: '4px' }}>
-          {chatHistory.map((msg, idx) => (
-            <div key={idx} style={{ marginBottom: '0.5rem' }}>
-              <strong>{msg.role === 'user' ? 'You' : 'Gemini'}:</strong> {msg.content}
-            </div>
-          ))}
+      {answer && (
+        <div className="bg-blue-50 p-4 rounded-lg border">
+          <h4 className="font-semibold mb-2">AI Answer:</h4>
+          <div className="whitespace-pre-wrap text-sm">{answer}</div>
         </div>
       )}
+
+      <div className="border-t pt-4">
+        <h3 className="text-lg font-semibold mb-3">💬 Gemini Pro Chat</h3>
+        <form onSubmit={handleSendChat} className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={chatInput}
+            onChange={handleChatInputChange}
+            placeholder="hi"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={loading || !apiKey}
+          />
+          <button 
+            type="submit" 
+            disabled={loading || !chatInput || !apiKey}
+            className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Sending...' : 'Send'}
+          </button>
+        </form>
+
+        {chatResponse && (
+          <div className="bg-green-50 p-3 rounded-lg border mb-4">
+            <strong>Gemini:</strong> <span className="whitespace-pre-wrap">{chatResponse}</span>
+          </div>
+        )}
+
+        {chatHistory.length > 0 && (
+          <div className="max-h-48 overflow-y-auto bg-gray-50 p-3 rounded-lg border">
+            <h4 className="font-semibold mb-2">Chat History:</h4>
+            {chatHistory.map((msg, idx) => (
+              <div key={idx} className="mb-2 p-2 rounded bg-white">
+                <strong className={msg.role === 'user' ? 'text-blue-600' : 'text-green-600'}>
+                  {msg.role === 'user' ? 'You' : 'Gemini'}:
+                </strong>{' '}
+                <span className="text-sm">{msg.content}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

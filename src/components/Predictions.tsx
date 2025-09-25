@@ -60,9 +60,9 @@ const Predictions: React.FC<PredictionsProps> = ({
       // Generate insights
       const insights: string[] = []
       if (netMonthlyIncome > 0) {
-        insights.push(`💰 You're saving $${netMonthlyIncome.toLocaleString()} per month`)
+        insights.push(`💰 You're saving ₹${netMonthlyIncome.toLocaleString()} per month`)
       } else {
-        insights.push(`⚠️ You're spending $${Math.abs(netMonthlyIncome).toLocaleString()} more than you earn`)
+        insights.push(`⚠️ You're spending ₹${Math.abs(netMonthlyIncome).toLocaleString()} more than you earn`)
       }
       
       if (savingsRate > 20) {
@@ -78,10 +78,10 @@ const Predictions: React.FC<PredictionsProps> = ({
       // Generate recommendations
       const recommendations: string[] = []
       if (netMonthlyIncome < 0) {
-        recommendations.push(`Reduce expenses by $${Math.abs(netMonthlyIncome).toLocaleString()} to break even`)
+        recommendations.push(`Reduce expenses by ₹${Math.abs(netMonthlyIncome).toLocaleString()} to break even`)
         recommendations.push(`Consider finding additional income sources`)
       } else if (savingsRate < 20) {
-        recommendations.push(`Try to save an additional $${((income * 0.2) - netMonthlyIncome).toFixed(0)} monthly`)
+        recommendations.push(`Try to save an additional ₹${((income * 0.2) - netMonthlyIncome).toFixed(0)} monthly`)
         recommendations.push(`Review and cut unnecessary expenses`)
       } else {
         recommendations.push(`Consider investing your surplus for better returns`)
@@ -157,21 +157,21 @@ const Predictions: React.FC<PredictionsProps> = ({
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-blue-800 mb-2">Projected Balance</h3>
                 <p className={`text-2xl font-bold ${getBalanceColor(currentPrediction.projectedBalance)}`}>
-                  ${currentPrediction.projectedBalance.toLocaleString()}
+                  ₹{currentPrediction.projectedBalance.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">
                   {currentPrediction.projectedBalance > balance ? '+' : ''}
-                  ${(currentPrediction.projectedBalance - balance).toLocaleString()} from current
+                  ₹{(currentPrediction.projectedBalance - balance).toLocaleString()} from current
                 </p>
               </div>
               
               <div className="bg-green-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-green-800 mb-2">Projected Savings</h3>
                 <p className="text-2xl font-bold text-green-600">
-                  ${currentPrediction.projectedSavings.toLocaleString()}
+                  ₹{currentPrediction.projectedSavings.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">
-                  +${(currentPrediction.projectedSavings - savings).toLocaleString()} growth
+                  +₹{(currentPrediction.projectedSavings - savings).toLocaleString()} growth
                 </p>
               </div>
             </div>

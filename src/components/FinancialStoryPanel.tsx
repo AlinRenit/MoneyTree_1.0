@@ -42,15 +42,15 @@ const FinancialStoryPanel: React.FC<FinancialStoryPanelProps> = ({
     const now = new Date()
 
     // Balance-based stories
-    if (balance > 10000) {
+    if (balance > 800000) { // ₹8,00,000 threshold instead of $10,000
       newStories.push({
         title: "Tree is Flourishing! 🌳",
-        message: "Your financial tree is in excellent health with over $10,000 in your garden! Keep nurturing it with consistent savings.",
+        message: "Your financial tree is in excellent health with over ₹8,00,000 in your garden! Keep nurturing it with consistent savings.",
         emoji: "🎉",
         type: "achievement",
         timestamp: now
       })
-    } else if (balance > 5000) {
+    } else if (balance > 400000) { // ₹4,00,000 threshold instead of $5,000
       newStories.push({
         title: "Growing Strong 🌱",
         message: "Your money tree is growing steadily. Consider adding more nutrients (savings) to help it reach full bloom!",

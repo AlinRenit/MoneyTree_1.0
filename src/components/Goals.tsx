@@ -20,7 +20,7 @@ const Goals: React.FC<GoalsProps> = ({ savings }) => {
     {
       id: '1',
       name: 'Emergency Fund',
-      targetAmount: 10000,
+      targetAmount: 800000, // ₹8,00,000 (converted from $10k)
       currentAmount: savings * 0.6,
       targetDate: new Date('2025-12-31'),
       category: 'emergency',
@@ -29,7 +29,7 @@ const Goals: React.FC<GoalsProps> = ({ savings }) => {
     {
       id: '2', 
       name: 'Vacation to Japan',
-      targetAmount: 5000,
+      targetAmount: 400000, // ₹4,00,000 (converted from $5k)
       currentAmount: savings * 0.2,
       targetDate: new Date('2026-06-01'),
       category: 'vacation',
@@ -38,7 +38,7 @@ const Goals: React.FC<GoalsProps> = ({ savings }) => {
     {
       id: '3',
       name: 'Investment Portfolio',
-      targetAmount: 15000,
+      targetAmount: 1200000, // ₹12,00,000 (converted from $15k)
       currentAmount: savings * 0.2,
       targetDate: new Date('2026-12-31'),
       category: 'investment',
@@ -145,7 +145,7 @@ const Goals: React.FC<GoalsProps> = ({ savings }) => {
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium text-gray-600">
-                      ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
+                      ₹{Math.round(goal.currentAmount).toLocaleString()} / ₹{goal.targetAmount.toLocaleString()}
                     </div>
                     <div className="text-xs text-gray-500">
                       {daysLeft > 0 ? `${daysLeft} days left` : 'Overdue'}
@@ -172,16 +172,16 @@ const Goals: React.FC<GoalsProps> = ({ savings }) => {
                 {!isCompleted && (
                   <div className="mt-2 flex space-x-2">
                     <button
-                      onClick={() => updateGoalProgress(goal.id, 100)}
+                      onClick={() => updateGoalProgress(goal.id, 8000)} // ₹8,000 instead of $100
                       className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
                     >
-                      +$100
+                      +₹8,000
                     </button>
                     <button
-                      onClick={() => updateGoalProgress(goal.id, 500)}
+                      onClick={() => updateGoalProgress(goal.id, 40000)} // ₹40,000 instead of $500
                       className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
                     >
-                      +$500
+                      +₹40,000
                     </button>
                   </div>
                 )}
